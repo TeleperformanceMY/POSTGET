@@ -6,6 +6,7 @@
     body { font-family: Arial; padding: 20px; }
     input, button { padding: 10px; margin: 5px; width: 250px; }
     #result { margin-top: 20px; }
+    .entry { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 5px; }
   </style>
 </head>
 <body>
@@ -30,18 +31,27 @@
 
       const data = await response.json();
 
-      const resultDiv = document.getElementById("result");
+      // data.body is a JSON string of an array, so parse it!
+      const resultsArray = JSON.parse(data.body);
 
-      if (data.found) {
-        resultDiv.innerHTML = `
-          <p><strong>Name:</strong> ${data.name}</p>
-          <p><strong>Phone:</strong> ${data.phone}</p>
-          <p><strong>Email:</strong> ${data.email}</p>
-          <p><strong>Status:</strong> ${data.status}</p>
-          <p><strong>Referral Name:</strong> ${data.referral}</p>
-        `;
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = ""; // clear previous results
+
+      if (resultsArray.length > 0) {
+        resultsArray.forEach(entry => {
+          const entryDiv = document.createElement("div");
+          entryDiv.className = "entry";
+          entryDiv.innerHTML = `
+            <p><strong>Name:</strong> ${entry.name}</p>
+            <p><strong>Phone:</strong> ${entry.phone}</p>
+            <p><strong>Email:</strong> ${entry.email}</p>
+            <p><strong>Status:</strong> ${entry.status ?? 'N/A'}</p>
+            <p><strong>Referral:</strong> ${entry.referral ?? 'N/A'}</p>
+          `;
+          resultDiv.appendChild(entryDiv);
+        });
       } else {
-        resultDiv.innerHTML = `<p style="color:red;">${data.message}</p>`;
+        resultDiv.innerHTML = `<p style="color:red;">No application found.</p>`;
       }
     }
   </script>
