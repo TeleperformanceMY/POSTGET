@@ -369,7 +369,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!isValid) return;
         
        // 💥 NEW: Send HTTP request to Power Automate endpoint
-const powerAutomateEndpoint = 'https://prod-77.southeastasia.logic.azure.com:443/workflows/3dcf20be6af641a4b49eb48727473a47/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uVigg-lTLRaUgLgUdGUnqCt9-TWJC7E7c8ryTjLC0Hw'; // <--- PUT YOUR ENDPOINT HERE
+const powerAutomateEndpoint = 'https://prod-77.southeastasia.logic.azure.com:443/workflows/3dcf20be6af641a4b49eb48727473a47/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uVigg-lTLRaUgLgUdGUnqCt9-TWJC7E7c8ryTjLC0Hw';
 
 fetch(powerAutomateEndpoint, {
     method: 'POST',
@@ -385,12 +385,11 @@ fetch(powerAutomateEndpoint, {
 .then(data => {
     console.log('Received JSON from Power Automate:', data);
 
-    // 🌟 Map the data to your dashboard structure
     const referrals = data.map(item => ({
         name: item.name,
         phone: item.phone,
         email: item.email,
-        stage: "Unknown",   // Placeholder for now
+        stage: "Unknown",
         status: item.status || "No status",
         statusType: "received",
         applicationDate: new Date().toISOString(),
@@ -407,13 +406,13 @@ fetch(powerAutomateEndpoint, {
         return;
     }
 
-    // Show results in the dashboard
     showReferralResults(referrals, phone, email);
 })
 .catch(error => {
     console.error('Error fetching data from Power Automate:', error);
     alert('An error occurred while getting your referrals. Please try again.');
 });
+
 
     // Show referral results
     function showReferralResults(referrals, phone, email) {
