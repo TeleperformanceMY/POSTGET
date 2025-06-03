@@ -368,20 +368,53 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (!isValid) return;
         
-        // Get referrals
-        const referrals = getReferrals(phone, email);
-        
-        if (!referrals) {
-            // Show user not found modal
-            const userNotFoundModal = new bootstrap.Modal(document.getElementById('userNotFoundModal'));
-            userNotFoundModal.show();
-            return;
-        }
-        
-        // Show results
-        showReferralResults(referrals, phone, email);
-    });
-    
+       // 💥 NEW: Send HTTP request to Power Automate endpoint
+const powerAutomateEndpoint = 'https://prod-77.southeastasia.logic.azure.com:443/workflows/3dcf20be6af641a4b49eb48727473a47/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uVigg-lTLRaUgLgUdGUnqCt9-TWJC7E7c8ryTjLC0Hw'; // <--- PUT YOUR ENDPOINT HERE
+
+fetch(powerAutomateEndpoint, {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        phone: phone,
+        email: email
+    })
+})
+.then(response => response.json())
+.then(data => {
+    console.log('Received JSON from Power Automate:', data);
+
+    // 🌟 Map the data to your dashboard structure
+    const referrals = data.map(item => ({
+        name: item.name,
+        phone: item.phone,
+        email: item.email,
+        stage: "Unknown",   // Placeholder for now
+        status: item.status || "No status",
+        statusType: "received",
+        applicationDate: new Date().toISOString(),
+        daysInStage: 0,
+        category: "Unknown",
+        source: "Power Automate",
+        needsAction: false,
+        isPreviousCandidate: false
+    }));
+
+    if (!referrals || referrals.length === 0) {
+        const userNotFoundModal = new bootstrap.Modal(document.getElementById('userNotFoundModal'));
+        userNotFoundModal.show();
+        return;
+    }
+
+    // Show results in the dashboard
+    showReferralResults(referrals, phone, email);
+})
+.catch(error => {
+    console.error('Error fetching data from Power Automate:', error);
+    alert('An error occurred while getting your referrals. Please try again.');
+});
+
     // Show referral results
     function showReferralResults(referrals, phone, email) {
         document.getElementById('auth-step').style.display = 'none';
