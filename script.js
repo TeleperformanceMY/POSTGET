@@ -335,60 +335,62 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Form submission
-    document.getElementById('dashboard-submit').addEventListener('click', function() {
-        const phone = document.getElementById('dashboard-phone').value.trim();
-        const email = document.getElementById('dashboard-email').value.trim();
-        let isValid = true;
-        
-        // Validate phone
-        if (!phone) {
-            showError(document.getElementById('dashboard-phone'), 
-                     translations[currentLanguage].phoneError);
-            isValid = false;
-        } else if (!validatePhone(phone)) {
-            showError(document.getElementById('dashboard-phone'), 
-                     translations[currentLanguage].phoneError);
-            isValid = false;
-        } else {
-            clearError(document.getElementById('dashboard-phone'));
-        }
-        
-        // Validate email
-        if (!email) {
-            showError(document.getElementById('dashboard-email'), 
-                     translations[currentLanguage].emailError);
-            isValid = false;
-        } else if (!validateEmail(email)) {
-            showError(document.getElementById('dashboard-email'), 
-                     translations[currentLanguage].emailError);
-            isValid = false;
-        } else {
-            clearError(document.getElementById('dashboard-email'));
-        }
-        
-        if (!isValid) return;
-        
-// Fetch referrals from Power Automate
-fetch("https://prod-77.southeastasia.logic.azure.com:443/workflows/3dcf20be6af641a4b49eb48727473a47/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uVigg-lTLRaUgLgUdGUnqCt9-TWJC7E7c8ryTjLC0Hw", {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ phone, email })
-})
-.then(response => response.json())
-.then(data => {
-    if (Array.isArray(data) && data.length > 0) {
-        showReferralResults(data, phone, email);
+  // Form submission
+document.getElementById('dashboard-submit').addEventListener('click', function () {
+    const phone = document.getElementById('dashboard-phone').value.trim();
+    const email = document.getElementById('dashboard-email').value.trim();
+    let isValid = true;
+
+    // Validate phone
+    if (!phone) {
+        showError(document.getElementById('dashboard-phone'),
+            translations[currentLanguage].phoneError);
+        isValid = false;
+    } else if (!validatePhone(phone)) {
+        showError(document.getElementById('dashboard-phone'),
+            translations[currentLanguage].phoneError);
+        isValid = false;
     } else {
-        const userNotFoundModal = new bootstrap.Modal(document.getElementById('userNotFoundModal'));
-        userNotFoundModal.show();
+        clearError(document.getElementById('dashboard-phone'));
     }
-})
-.catch(error => {
-    console.error("Error fetching data from Power Automate:", error);
-    const userNotFoundModal = new bootstrap.Modal(document.getElementById('userNotFoundModal'));
-    userNotFoundModal.show();
+
+    // Validate email
+    if (!email) {
+        showError(document.getElementById('dashboard-email'),
+            translations[currentLanguage].emailError);
+        isValid = false;
+    } else if (!validateEmail(email)) {
+        showError(document.getElementById('dashboard-email'),
+            translations[currentLanguage].emailError);
+        isValid = false;
+    } else {
+        clearError(document.getElementById('dashboard-email'));
+    }
+
+    if (!isValid) return;
+
+    // 🔁 Replace local getReferrals with live Power Automate call
+    fetch("https://prod-77.southeastasia.logic.azure.com:443/workflows/3dcf20be6af641a4b49eb48727473a47/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uVigg-lTLRaUgLgUdGUnqCt9-TWJC7E7c8ryTjLC0Hw", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ phone, email })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (Array.isArray(data) && data.length > 0) {
+                showReferralResults(data, phone, email);
+            } else {
+                const userNotFoundModal = new bootstrap.Modal(document.getElementById('userNotFoundModal'));
+                userNotFoundModal.show();
+            }
+        })
+        .catch(error => {
+            console.error("Error calling Power Automate:", error);
+            const userNotFoundModal = new bootstrap.Modal(document.getElementById('userNotFoundModal'));
+            userNotFoundModal.show();
+        });
 });
 
     
