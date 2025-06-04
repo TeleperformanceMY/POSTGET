@@ -334,64 +334,62 @@ document.addEventListener('DOMContentLoaded', function() {
         updateTranslations();
     }
     
-    // Form submission
-  // Form submission
-document.getElementById('dashboard-submit').addEventListener('click', function () {
-    const phone = document.getElementById('dashboard-phone').value.trim();
-    const email = document.getElementById('dashboard-email').value.trim();
-    let isValid = true;
-
-    // Validate phone
-    if (!phone) {
-        showError(document.getElementById('dashboard-phone'),
-            translations[currentLanguage].phoneError);
-        isValid = false;
-    } else if (!validatePhone(phone)) {
-        showError(document.getElementById('dashboard-phone'),
-            translations[currentLanguage].phoneError);
-        isValid = false;
-    } else {
-        clearError(document.getElementById('dashboard-phone'));
+document.addEventListener("DOMContentLoaded", function () {
+    const dashboardSubmitBtn = document.getElementById('dashboard-submit');
+    if (!dashboardSubmitBtn) {
+        console.error("Button #dashboard-submit not found!");
+        return;
     }
 
-    // Validate email
-    if (!email) {
-        showError(document.getElementById('dashboard-email'),
-            translations[currentLanguage].emailError);
-        isValid = false;
-    } else if (!validateEmail(email)) {
-        showError(document.getElementById('dashboard-email'),
-            translations[currentLanguage].emailError);
-        isValid = false;
-    } else {
-        clearError(document.getElementById('dashboard-email'));
-    }
+    dashboardSubmitBtn.addEventListener('click', function () {
+        const phone = document.getElementById('dashboard-phone').value.trim();
+        const email = document.getElementById('dashboard-email').value.trim();
+        let isValid = true;
 
-    if (!isValid) return;
+        // Validate phone
+        if (!phone || !validatePhone(phone)) {
+            showError(document.getElementById('dashboard-phone'),
+                translations[currentLanguage].phoneError);
+            isValid = false;
+        } else {
+            clearError(document.getElementById('dashboard-phone'));
+        }
 
-    // 🔁 Replace local getReferrals with live Power Automate call
-    fetch("https://prod-77.southeastasia.logic.azure.com:443/workflows/3dcf20be6af641a4b49eb48727473a47/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uVigg-lTLRaUgLgUdGUnqCt9-TWJC7E7c8ryTjLC0Hw", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ phone, email })
-    })
-        .then(response => response.json())
-        .then(data => {
-            if (Array.isArray(data) && data.length > 0) {
-                showReferralResults(data, phone, email);
-            } else {
-                const userNotFoundModal = new bootstrap.Modal(document.getElementById('userNotFoundModal'));
-                userNotFoundModal.show();
-            }
+        // Validate email
+        if (!email || !validateEmail(email)) {
+            showError(document.getElementById('dashboard-email'),
+                translations[currentLanguage].emailError);
+            isValid = false;
+        } else {
+            clearError(document.getElementById('dashboard-email'));
+        }
+
+        if (!isValid) return;
+
+        fetch("https://prod-77.southeastasia.logic.azure.com:443/workflows/3dcf20be6af641a4b49eb48727473a47/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uVigg-lTLRaUgLgUdGUnqCt9-TWJC7E7c8ryTjLC0Hw", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ phone, email })
         })
-        .catch(error => {
-            console.error("Error calling Power Automate:", error);
-            const userNotFoundModal = new bootstrap.Modal(document.getElementById('userNotFoundModal'));
-            userNotFoundModal.show();
-        });
+            .then(response => response.json())
+            .then(data => {
+                if (Array.isArray(data) && data.length > 0) {
+                    showReferralResults(data, phone, email);
+                } else {
+                    const modal = new bootstrap.Modal(document.getElementById('userNotFoundModal'));
+                    modal.show();
+                }
+            })
+            .catch(error => {
+                console.error("Error calling Power Automate:", error);
+                const modal = new bootstrap.Modal(document.getElementById('userNotFoundModal'));
+                modal.show();
+            });
+    });
 });
+
 
     
     // Show referral results
